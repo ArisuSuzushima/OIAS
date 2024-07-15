@@ -1,0 +1,3 @@
+module OMG_ITS_ALLNET_SERVER
+
+go 1.22
