@@ -18,7 +18,7 @@ func (h *FeliCaHandler) Handle(header *aimedb.AimeDbHeader, payload []byte) (uin
 		} else {
 			idm := payload[:8]
 			pmm := payload[8:]
-			return 0, GetFelicaID(pmm, idm), nil
+			return 0, GetFeliCaID(idm, pmm), nil
 		}
 	case 2:
 		break
@@ -29,15 +29,15 @@ func (h *FeliCaHandler) Handle(header *aimedb.AimeDbHeader, payload []byte) (uin
 	return 0, nil, nil
 }
 
-// GetFelicaID calculate access code by slicing idm
+// GetFeliCaID calculate access code by slicing idm
 // Returns []byte(ac) AccessCode converted to Byte
-func GetFelicaID(pmm []byte, idm []byte) []byte {
+func GetFeliCaID(idm []byte, pmm []byte) []byte {
 	idmStr := string(idm)
 
 	// Handle empty card idm
 	if idmStr == "00000000000000000000" {
 		// TODO: detect which client sent an empty id
-		logrus.Debug("FeliCaHandler::GetFelicaID Receive empty idm!")
+		logrus.Debug("FeliCaHandler::GetFeliCaID Receive empty idm!")
 		// TODO: exec safety action
 		return []byte("00000000000000000000")
 	}
@@ -45,15 +45,16 @@ func GetFelicaID(pmm []byte, idm []byte) []byte {
 	// Convert idm from Hex to D
 	hexValue, err := strconv.ParseInt(idmStr, 16, 64)
 	if err != nil {
-		logrus.Debug("FeliCaHandler::GetFelicaID FelicaID parse error:", err)
+		logrus.Debug("FeliCaHandler::GetFeliCaID FeliCaID parse error:", err)
 		return []byte("00000000000000000000")
 	}
 
 	// Format to 20-bit Hex, prefixed with 0
 	ac := fmt.Sprintf("%020x", hexValue)
+	logrus.Debug("FeliCaHandler::GetFeliCaID Rec/Gen FeliCaID:", ac)
 	return []byte(ac)
 }
 
-func RegFelicaID(pmm []byte, idm []byte) []byte {
+func RegFeliCaID(idm []byte, pmm []byte) []byte {
 	return nil
 }
