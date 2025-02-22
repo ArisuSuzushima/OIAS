@@ -6,50 +6,63 @@ import (
 	"fmt"
 )
 
-const headerSize = 32
-
-// AimeDbHeader represents the packet header
-type AimeDbHeader struct {
-	Magic     uint16
-	Version   uint16
-	CommandID uint16
-	Length    uint16
-	Result    uint16
-	GameID    [6]byte
-	StoreID   [4]byte
-	KeychipID [12]byte
-}
-
 const (
-	magic   uint16 = 0xa13e
-	version uint16 = 0x3087
+	MagicValue   = 0xA13E
+	VersionValue = 0x3087
+	HeaderSize   = 32 // All headers are 32 bytes
 )
 
-func DecodeHeader(data []byte) (*AimeDbHeader, error) {
-	decrypted, err := Decrypt(data)
+// AimeDbHeader represents the header of an AimeDB packet
+type AimeDbHeader struct {
+	Magic     uint16   // Magic 0xA13E
+	Version   uint16   // Version 0x3087
+	CommandID uint16   // Command ID
+	Length    uint16   // Length of the payload
+	Result    uint16   // Result
+	_         [2]byte  // Idk what this is(?)
+	GameID    [6]byte  // Game ID
+	StoreID   [4]byte  // Tenpo ID
+	KeychipID [12]byte // Keychip ID
+}
+
+// DecodeHeader decodes the header of an AimeDB packet
+func DecodeHeader(encryptedData []byte) (*AimeDbHeader, error) {
+	decrypted, err := Decrypt(encryptedData[:HeaderSize])
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("decrypt failed: %w", err)
 	}
+
 	header := &AimeDbHeader{}
-	err = binary.Read(bytes.NewReader(decrypted[:headerSize]), binary.LittleEndian, header)
-	if err != nil {
-		return nil, err
+	reader := bytes.NewReader(decrypted)
+	if err := binary.Read(reader, binary.LittleEndian, header); err != nil {
+		return nil, fmt.Errorf("binary read failed: %w", err)
 	}
-	if header.Magic != magic {
-		return nil, fmt.Errorf("invalid magic: %x", header.Magic)
+
+	if header.Magic != MagicValue {
+		return nil, fmt.Errorf("invalid magic: 0x%X", header.Magic)
 	}
+	if header.Version != VersionValue {
+		return nil, fmt.Errorf("invalid version: 0x%X", header.Version)
+	}
+
 	return header, nil
 }
 
-func EncodeHeader(header *AimeDbHeader) ([]byte, error) {
+// EncodeResponse encodes a response packet
+func EncodeResponse(header *AimeDbHeader, payload []byte) ([]byte, error) {
 	buf := new(bytes.Buffer)
-	err := binary.Write(buf, binary.LittleEndian, header)
+
+	header.Length = uint16(len(payload))
+
+	if err := binary.Write(buf, binary.LittleEndian, header); err != nil {
+		return nil, err
+	}
+
+	fullData := append(buf.Bytes(), payload...)
+	encrypted, err := Encrypt(fullData)
 	if err != nil {
 		return nil, err
 	}
-	encrypted, err := Encrypt(buf.Bytes())
-	if err != nil {
-		return nil, err
-	}
+
 	return encrypted, nil
 }

@@ -8,6 +8,6 @@ import (
 
 func main() {
 	config.EnvInit()
-	aimedb.Run()
+	aimedb.NewServer()
 	title.Run()
 }
