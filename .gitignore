@@ -30,4 +30,4 @@ gen
 go.work
 
 # Config File
-./config.json
+/config.json
