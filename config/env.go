@@ -52,7 +52,8 @@ func SetEnvConf(ConfKey string, ConfSub string) {
 
 func EnvInit() {
 	var dict = map[string][]string{
-		"db": {"host", "port", "user", "password", "database"},
+		"log": {"debug", "file"},
+		"db":  {"host", "port", "user", "password", "database"},
 	}
 	for key, value := range dict {
 		for _, sub := range value {

@@ -1,23 +1,19 @@
 package config
 
 import (
-	"github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 	"log"
 )
 
 func init() {
 	viper.SetConfigFile("config.json")
-	viper.SetDefault("db.host", dbConfig.Host)
-	viper.SetDefault("db.port", dbConfig.Port)
-	viper.SetDefault("db.user", dbConfig.User)
-	viper.SetDefault("db.password", dbConfig.Password)
-	viper.SetDefault("db.database", dbConfig.Database)
+	viper.SetDefault("log", logConfig)
+	viper.SetDefault("db", dbConfig)
 	conf := &config{}
 	if err := viper.ReadInConfig(); err != nil {
-		logrus.Warning("Can't read config, trying to modify!")
+		log.Println("Can't read config, trying to modify!")
 		if err := viper.WriteConfig(); err != nil {
-			logrus.Fatal("Error writing config: ", err)
+			log.Fatal("Error writing config: ", err)
 		}
 	}
 	if err := viper.Unmarshal(conf); err != nil {
@@ -28,7 +24,7 @@ func init() {
 func Get(key string) any {
 	viper.SetConfigFile("config.json")
 	if err := viper.ReadInConfig(); err != nil {
-		logrus.Error("Error reading config file, ", err)
+		log.Fatal("Error reading config file, ", err)
 	}
 	return viper.Get(key)
 }
@@ -36,7 +32,7 @@ func Get(key string) any {
 func Set(key string, value any) {
 	viper.SetConfigFile("config.json")
 	if err := viper.ReadInConfig(); err != nil {
-		logrus.Error("Error reading config file, ", err)
+		log.Fatal("Error reading config file, ", err)
 	}
 	viper.Set(key, value)
 }
