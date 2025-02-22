@@ -7,8 +7,8 @@ import (
 )
 
 func Init() {
-	FileLogger := config.Get("server.file_logger").(bool)
-	DebugMode := config.Get("server.debug_mode").(bool)
+	FileLogger := config.Get("log.file").(bool)
+	DebugMode := config.Get("log.debug").(bool)
 
 	if FileLogger {
 		file, err := os.OpenFile("app.log", os.O_APPEND|os.O_CREATE|os.O_RDWR, 0666)

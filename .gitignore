@@ -29,3 +29,5 @@ gen
 # Go workspace file
 go.work
 
+# Config File
+./config.json
